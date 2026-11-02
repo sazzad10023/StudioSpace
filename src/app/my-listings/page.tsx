@@ -40,25 +40,30 @@ export default function MyListingsPage() {
   const user = session?.user;
 
   const [studios, setStudios] = useState<Studio[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    if (isPending) return;
+  const email = user?.email ?? null;
 
-    if (!user?.email) {
-      setStudios([]);
-      setLoading(false);
-      return;
-    }
+  // Adjust state during render when the logged-in email changes
+  // (React's recommended pattern instead of setState inside useEffect).
+  const [prevEmail, setPrevEmail] = useState(email);
+  if (email !== prevEmail) {
+    setPrevEmail(email);
+    setStudios([]);
+    setLoading(email !== null);
+    setErrorMessage("");
+  }
+
+  useEffect(() => {
+    if (!email) return;
+
+    let cancelled = false;
 
     const getStudios = async () => {
-      setLoading(true);
-      setErrorMessage("");
-
       try {
         const res = await fetch(
-          `${API_URL}/my-studios/${encodeURIComponent(user.email)}`,
+          `${API_URL}/my-studios/${encodeURIComponent(email)}`,
           {
             method: "GET",
             headers: {
@@ -74,19 +79,30 @@ export default function MyListingsPage() {
 
         const data: Studio[] = await res.json();
 
-        setStudios(data);
+        if (!cancelled) {
+          setStudios(data);
+        }
       } catch (error) {
         console.error("Error fetching studios:", error);
-        setErrorMessage(
-          "Unable to load your studio listings. Please try again."
-        );
+
+        if (!cancelled) {
+          setErrorMessage(
+            "Unable to load your studio listings. Please try again."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     getStudios();
-  }, [user?.email, isPending]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
 
   if (isPending || loading) {
     return (
@@ -196,7 +212,7 @@ export default function MyListingsPage() {
             </h2>
 
             <p className="mx-auto mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
-              You haven't added any studios yet. Create your first listing to
+              You haven&apos;t added any studios yet. Create your first listing to
               get started.
             </p>
 
