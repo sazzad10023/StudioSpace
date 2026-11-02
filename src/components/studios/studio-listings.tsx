@@ -1,20 +1,25 @@
+
 "use client";
 
 import React from "react";
 import { Building2, MapPin, Star } from "lucide-react";
 import Link from "next/link";
-import { cn } from "cn";
+import { useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { createLogger } from "@/lib/logger";
 import type { Studio } from "@/lib/studios";
 
 const logger = createLogger("allstudio");
 
-// The category tabs. `keyword` is matched loosely against each studio's
-// category, so spelling differences with the API do not break the filter.
+// Category filters
 const FILTERS = [
   { label: "All", keyword: "" },
   { label: "Photo Studio", keyword: "photo" },
@@ -24,22 +29,38 @@ const FILTERS = [
   { label: "Film Stages", keyword: "film" },
   { label: "Art Workshop", keyword: "art" },
 ] as const;
-// ---------------------------------------------------------------------------
-// UI scale: heights/paddings shared with the add-studio page.
-// ---------------------------------------------------------------------------
+
+// Homepage category names -> listing filter names
+const CATEGORY_MAP: Record<string, string> = {
+  "photo studios": "Photo Studio",
+  "sound stages": "Sound Stages",
+  "podcast rooms": "Podcast Lounge",
+  "music suites": "Music Suite",
+  "art workshops": "Art Workshop",
+};
+
+// Match URL category with a filter
+function getMatchingFilter(category: string | null): string {
+  if (!category) return "All";
+
+  return (
+    CATEGORY_MAP[category.trim().toLowerCase()] ?? "All"
+  );
+}
+
+// Shared UI scale
 const PILL = "h-10 rounded-full px-4";
 
-// ---------------------------------------------------------------------------
-// StudioCard — one listing card.
-// ---------------------------------------------------------------------------
+// --------------------------------------------------
+// Studio Card
+// --------------------------------------------------
+
 function StudioCard({ studio }: { studio: Studio }) {
   return (
     <Card className="w-full gap-0 rounded-2xl border border-gray-200 bg-white py-0 shadow-sm ring-0 transition hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800 dark:bg-gray-900">
       {/* Cover image */}
       <div className="relative aspect-[16/10] bg-gray-100 dark:bg-gray-800">
         {studio.imageUrl ? (
-          // The API may point to any host, so next/image remote
-          // patterns do not apply here.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={studio.imageUrl}
@@ -87,38 +108,46 @@ function StudioCard({ studio }: { studio: Studio }) {
         <p className="text-gray-900 dark:text-white">
           {studio.hourlyRate !== null ? (
             <>
-              <span className="text-lg font-bold">${studio.hourlyRate}</span>
+              <span className="text-lg font-bold">
+                ${studio.hourlyRate}
+              </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {" "}
-                / hour
+                {" "}/ hour
               </span>
             </>
           ) : (
-            <span className="text-sm font-medium">Price on request</span>
+            <span className="text-sm font-medium">
+              Price on request
+            </span>
           )}
         </p>
-       <Link href={`/studios/${studio.id}`} className="w-full sm:w-auto">
-        <Button
-          size="sm"
-          className="w-full bg-violet-600 text-white hover:bg-violet-700 sm:w-auto dark:bg-violet-600 dark:text-white dark:hover:bg-violet-700"
-          onClick={() =>
-            logger.info("View details requested", {
-              id: studio.id,
-              title: studio.title,
-            })
-          }
+
+        <Link
+          href={`/studios/${studio.id}`}
+          className="w-full sm:w-auto"
         >
-          View Details
-        </Button>
+          <Button
+            size="sm"
+            className="w-full bg-violet-600 text-white hover:bg-violet-700 sm:w-auto dark:bg-violet-600 dark:text-white dark:hover:bg-violet-700"
+            onClick={() =>
+              logger.info("View details requested", {
+                id: studio.id,
+                title: studio.title,
+              })
+            }
+          >
+            View Details
+          </Button>
         </Link>
       </CardFooter>
     </Card>
   );
 }
 
-// ---------------------------------------------------------------------------
-// StudioFilters — the pill row of category tabs (scrolls on small screens).
-// ---------------------------------------------------------------------------
+// --------------------------------------------------
+// Studio Filters
+// --------------------------------------------------
+
 function StudioFilters({
   active,
   onSelect,
@@ -154,9 +183,10 @@ function StudioFilters({
   );
 }
 
-// ---------------------------------------------------------------------------
-// StudioListings — the page: filters + card grid (or empty/error states).
-// ---------------------------------------------------------------------------
+// --------------------------------------------------
+// Studio Listings
+// --------------------------------------------------
+
 export default function StudioListings({
   studios,
   failed,
@@ -164,8 +194,20 @@ export default function StudioListings({
   studios: Studio[];
   failed: boolean;
 }) {
+  const searchParams = useSearchParams();
+
+  const selectedCategory = searchParams.get("category");
+
+  // Initialize filter from URL
   const [activeFilter, setActiveFilter] =
-    React.useState<string>(FILTERS[0].label);
+    React.useState<string>(() =>
+      getMatchingFilter(selectedCategory)
+    );
+
+  // Update filter when URL changes
+  React.useEffect(() => {
+    setActiveFilter(getMatchingFilter(selectedCategory));
+  }, [selectedCategory]);
 
   if (failed) {
     return (
@@ -175,9 +217,10 @@ export default function StudioListings({
             <p className="text-lg font-semibold text-gray-900 dark:text-white">
               Could not load studios
             </p>
+
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              The studio service is not reachable right now. Please try again
-              later.
+              The studio service is not reachable right now.
+              Please try again later.
             </p>
           </CardContent>
         </Card>
@@ -185,23 +228,30 @@ export default function StudioListings({
     );
   }
 
-  // Which studios match the currently selected tab.
+  // Filter studios
   const activeKeyword =
-    FILTERS.find((filter) => filter.label === activeFilter)?.keyword ?? "";
+    FILTERS.find(
+      (filter) => filter.label === activeFilter
+    )?.keyword ?? "";
+
   const visible = activeKeyword
     ? studios.filter((studio) =>
-        studio.category.toLowerCase().includes(activeKeyword)
+        (studio.category ?? "")
+          .toLowerCase()
+          .includes(activeKeyword)
       )
     : studios;
 
   return (
     <div className="bg-gray-50 py-8 sm:py-10 dark:bg-gray-950">
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
             All Studios
           </h1>
+
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Browse every workspace available for booking.
           </p>
@@ -213,19 +263,25 @@ export default function StudioListings({
             active={activeFilter}
             onSelect={(label) => {
               setActiveFilter(label);
-              logger.debug("Filter changed", { filter: label, studios: studios.length });
+
+              logger.debug("Filter changed", {
+                filter: label,
+                studios: studios.length,
+              });
             }}
           />
         </div>
 
-        {/* Cards grid */}
+        {/* Studio cards */}
         {visible.length === 0 ? (
-          <Card className="rounded-2xl border border-gray-200 px-4 py-10 text-center shadow-sm ring-0 dark:border-gray-800 dark:bg-gray-900">
+          <Card className="mt-6 rounded-2xl border border-gray-200 px-4 py-10 text-center shadow-sm ring-0 dark:border-gray-800 dark:bg-gray-900">
             <CardContent>
               <Building2 className="mx-auto size-8 text-gray-400" />
+
               <p className="mt-4 font-semibold text-gray-900 dark:text-white">
                 No studios found
               </p>
+
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 No studios match this category yet.
               </p>
@@ -234,7 +290,10 @@ export default function StudioListings({
         ) : (
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {visible.map((studio) => (
-              <StudioCard key={studio.id} studio={studio} />
+              <StudioCard
+                key={studio.id}
+                studio={studio}
+              />
             ))}
           </div>
         )}

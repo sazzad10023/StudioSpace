@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -53,24 +52,27 @@ export default function StudioDetailsPage() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/get-studio/${id}`)
-      .then((response) => {
+    const getStudio = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/get-studio/${id}`
+        );
+
         if (!response.ok) {
           throw new Error("Studio not found");
         }
 
-        return response.json();
-      })
-      .then((data: Studio) => {
+        const data: Studio = await response.json();
         setStudio(data);
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         console.error(error);
         setFailed(true);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    getStudio();
   }, [id]);
 
   if (loading) {

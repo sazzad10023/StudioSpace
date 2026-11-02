@@ -10,7 +10,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # StudioSpace
 
-Single Next.js 16 (App Router) app under `src/app` on React 19.3. No tests, no CI, one package.
+Single Next.js 16 (App Router) app under `src/app` on React 19.3 — a studio-rental listings front end (browse, detail, add/edit/delete listings). No tests, no CI, one package. The `README.md` is unmodified `create-next-app` boilerplate; this file is the real doc.
+
+## Backend dependency
+
+Pages fetch from an external backend **not in this repo**, at **`http://localhost:8000`** (hardcoded in 6 files as `API_URL` / `ENDPOINT` / inline literals — no env var). Endpoints: `GET /get-studios`, `GET /get-studio/{id}`, `POST /add-studio`, `PATCH /update-studio/{id}`, `DELETE /delete-studio/{id}`. Records use Mongo-style `_id`. Pages will error without the backend running; if you change the URL, change it in all 6 places.
 
 ## Commands
 
