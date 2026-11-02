@@ -1,8 +1,10 @@
-
 "use client";
 
 import React from "react";
+import { redirect, useRouter } from "next/navigation";
 import { Building2, Link2, MapPin, User } from "lucide-react";
+
+import { authClient } from "@/lib/auth-client";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,6 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { createLogger } from "@/lib/logger";
 
 const logger = createLogger("add-studio");
+
+const API_URL = "http://localhost:8000";
 
 const CATEGORIES = [
   "Photo Studios",
@@ -41,12 +45,6 @@ const AMENITIES = [
   "Power Backup",
   "Equipment Included",
 ] as const;
-
-// Placeholder host until authentication is wired up.
-const HOST = {
-  name: "Tarikul Islam",
-  email: "tarikul3639@gmail.com",
-};
 
 const EMPTY_FORM = {
   title: "",
@@ -77,14 +75,24 @@ function FieldLabel({
 }
 
 export default function AddStudioPage() {
+  const router = useRouter();
+
+  // Get the currently logged-in user.
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+
   const [form, setForm] = React.useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
 
-  const setField = (field: keyof typeof EMPTY_FORM, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const setField = (field: keyof typeof EMPTY_FORM, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-  const toggleAmenity = (amenity: string) =>
+  const toggleAmenity = (amenity: string) => {
     setForm((prev) => {
       const added = !prev.amenities.includes(amenity);
 
@@ -97,6 +105,7 @@ export default function AddStudioPage() {
           : prev.amenities.filter((item) => item !== amenity),
       };
     });
+  };
 
   const handleAdd = async (
     event: React.FormEvent<HTMLFormElement>
@@ -105,12 +114,17 @@ export default function AddStudioPage() {
 
     if (isSubmitting) return;
 
+    if (!user) {
+      setErrorMessage("Please login before adding a studio.");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage("");
 
-    // Prepare the studio document for MongoDB.
     const studioData = {
       ...form,
+
       title: form.title.trim(),
       maxCapacity: Number(form.maxCapacity),
       hourlyRate: Number(form.hourlyRate),
@@ -119,10 +133,10 @@ export default function AddStudioPage() {
       imageUrl: form.imageUrl.trim(),
       overview: form.overview.trim(),
 
-      // Owner information for My Studio Listings.
-      hostName: HOST.name,
-      hostEmail: HOST.email,
-      ownerEmail: HOST.email,
+      // Logged-in user's information.
+      hostName: user.name,
+      hostEmail: user.email,
+      ownerEmail: user.email,
 
       createdAt: new Date().toISOString(),
     };
@@ -134,7 +148,7 @@ export default function AddStudioPage() {
     });
 
     try {
-      const res = await fetch("http://localhost:8000/add-studio", {
+      const res = await fetch(`${API_URL}/add-studio`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,8 +168,14 @@ export default function AddStudioPage() {
       });
 
       setForm(EMPTY_FORM);
+
+      // Redirect to My Listings after successful submission.
+      router.push("/my-listings");
+      router.refresh();
+    // redirect("/my-listings");
     } catch (error) {
       logger.error("Failed to add studio", error);
+
       setErrorMessage(
         "Failed to add studio. Please check your server and try again."
       );
@@ -166,9 +186,36 @@ export default function AddStudioPage() {
 
   const handleReset = () => {
     logger.info("Form reset");
+
     setForm(EMPTY_FORM);
     setErrorMessage("");
   };
+
+  // Wait until Better Auth checks the session.
+  if (isPending) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-sm text-gray-500">Checking authentication...</p>
+      </div>
+    );
+  }
+
+  // Only authenticated users can add studios.
+  if (!user) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+        <h1 className="text-2xl font-bold">Login Required</h1>
+
+        <p className="text-sm text-gray-500">
+          Please login to add your studio.
+        </p>
+
+        <Button onClick={() => router.push("/login")}>
+          Login
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 py-8 dark:bg-gray-950">
@@ -196,6 +243,7 @@ export default function AddStudioPage() {
               {/* Studio Title */}
               <div>
                 <FieldLabel htmlFor="title">Studio Title</FieldLabel>
+
                 <Input
                   id="title"
                   className={inputClasses}
@@ -210,12 +258,12 @@ export default function AddStudioPage() {
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <FieldLabel htmlFor="category">Category</FieldLabel>
+
                   <Select
                     value={form.category || undefined}
                     onValueChange={(value) =>
                       setField("category", value ?? "")
                     }
-                    required
                   >
                     <SelectTrigger id="category" className="h-10 w-full">
                       <SelectValue placeholder="Select a category" />
@@ -235,6 +283,7 @@ export default function AddStudioPage() {
                   <FieldLabel htmlFor="maxCapacity">
                     Max Capacity
                   </FieldLabel>
+
                   <Input
                     id="maxCapacity"
                     className={inputClasses}
@@ -257,6 +306,7 @@ export default function AddStudioPage() {
                   <FieldLabel htmlFor="hourlyRate">
                     Hourly Rate ($)
                   </FieldLabel>
+
                   <Input
                     id="hourlyRate"
                     className={inputClasses}
@@ -276,6 +326,7 @@ export default function AddStudioPage() {
                   <FieldLabel htmlFor="securityDeposit">
                     Security Deposit ($)
                   </FieldLabel>
+
                   <Input
                     id="securityDeposit"
                     className={inputClasses}
@@ -292,13 +343,15 @@ export default function AddStudioPage() {
                 </div>
               </div>
 
-              {/* Location / Address */}
+              {/* Location */}
               <div>
                 <FieldLabel htmlFor="location">
                   Location / Address
                 </FieldLabel>
+
                 <div className="relative">
                   <MapPin className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-500" />
+
                   <Input
                     id="location"
                     className={`${inputClasses} pl-9`}
@@ -315,8 +368,10 @@ export default function AddStudioPage() {
               {/* Image URL */}
               <div>
                 <FieldLabel htmlFor="imageUrl">Image URL</FieldLabel>
+
                 <div className="relative">
                   <Link2 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-500" />
+
                   <Input
                     id="imageUrl"
                     className={`${inputClasses} pl-9`}
@@ -347,17 +402,19 @@ export default function AddStudioPage() {
                         checked={form.amenities.includes(amenity)}
                         onCheckedChange={() => toggleAmenity(amenity)}
                       />
+
                       {amenity}
                     </Label>
                   ))}
                 </div>
               </div>
 
-              {/* Detailed Overview */}
+              {/* Overview */}
               <div>
                 <FieldLabel htmlFor="overview">
                   Detailed Overview
                 </FieldLabel>
+
                 <Textarea
                   id="overview"
                   className="min-h-28"
@@ -381,6 +438,7 @@ export default function AddStudioPage() {
                     <h2 className="font-semibold text-gray-900 dark:text-white">
                       Host Information (Read-only)
                     </h2>
+
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       This listing will be added under your account.
                     </p>
@@ -392,10 +450,11 @@ export default function AddStudioPage() {
                     <Label htmlFor="hostName" className="mb-1.5">
                       Name
                     </Label>
+
                     <Input
                       id="hostName"
                       className={`${inputClasses} bg-gray-100 dark:bg-gray-800`}
-                      value={HOST.name}
+                      value={user.name ?? ""}
                       disabled
                     />
                   </div>
@@ -404,10 +463,11 @@ export default function AddStudioPage() {
                     <Label htmlFor="hostEmail" className="mb-1.5">
                       Email
                     </Label>
+
                     <Input
                       id="hostEmail"
                       className={`${inputClasses} bg-gray-100 dark:bg-gray-800`}
-                      value={HOST.email}
+                      value={user.email ?? ""}
                       disabled
                     />
                   </div>

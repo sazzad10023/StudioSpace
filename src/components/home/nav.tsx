@@ -15,6 +15,24 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
+import { authClient } from "@/lib/auth-client";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverDescription,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+import { Button } from "../ui/button";
+
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Explore Studios", href: "/studios" },
@@ -23,10 +41,12 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
   const [isOpen, setIsOpen] = useState(false);
 
-  // Replace with your actual authentication state.
-  const isAuthenticated = false;
+  const isAuthenticated = !!user;
 
   const { theme, setTheme } = useTheme();
 
@@ -36,14 +56,15 @@ export default function Navbar() {
 
   const closeMenu = () => setIsOpen(false);
 
-  const handleLogout = () => {
-    // Clear auth token/session here.
+  const handleLogout = async () => {
+    await authClient.signOut();
     closeMenu();
   };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/95">
       <nav className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+
         {/* Logo */}
         <Link
           href="/"
@@ -55,9 +76,10 @@ export default function Navbar() {
           </span>
 
           <span>
-            <span className="block text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white sm:text-xl">
+            <span className="block text-lg font-bold leading-tight tracking-tight text-gray-900 sm:text-xl dark:text-white">
               Studio<span className="text-violet-600">Space</span>
             </span>
+
             <span className="hidden text-[10px] tracking-wide text-gray-500 sm:block">
               CREATE WITHOUT LIMITS
             </span>
@@ -70,7 +92,7 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className="whitespace-nowrap text-sm font-medium text-black-600 transition-colors hover:text-violet-600 dark:text-gray-300 dark:hover:text-violet-400"
+              className="whitespace-nowrap text-sm font-medium text-gray-600 transition-colors hover:text-violet-600 dark:text-gray-300 dark:hover:text-violet-400"
             >
               {link.name}
             </Link>
@@ -79,6 +101,8 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden shrink-0 items-center gap-2 md:flex">
+
+          {/* Theme Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
@@ -92,15 +116,62 @@ export default function Navbar() {
             )}
           </button>
 
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-red-300 hover:text-red-600 dark:border-gray-700 dark:text-gray-200"
-            >
-              <LogOut size={16} />
-              Logout
-            </button>
+          {/* User Profile */}
+          {user ? (
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="Open user profile"
+                    className="rounded-full outline-none"
+                  >
+                    <Avatar>
+                      <AvatarImage
+                        referrerPolicy="no-referrer"
+                        src={user.image ?? undefined}
+                      />
+                      <AvatarFallback>
+                        {user.name?.charAt(0) ?? "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                }
+              />
+
+              <PopoverContent>
+                <PopoverHeader>
+                  <PopoverTitle>
+                    {user.name}
+                  </PopoverTitle>
+
+                  <PopoverDescription>
+                    {user.email}
+                  </PopoverDescription>
+                </PopoverHeader>
+
+                {/* Profile Actions */}
+                <div className="flex flex-col gap-2">
+
+                  <Link
+                    href="/my-listings"
+                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  >
+                    My Listings
+                  </Link>
+
+                  <Button
+                    onClick={handleLogout}
+                    variant="destructive"
+                    className="mt-2"
+                  >
+                    <LogOut size={16} />
+                    Signout
+                  </Button>
+
+                </div>
+              </PopoverContent>
+            </Popover>
           ) : (
             <>
               <Link
@@ -124,6 +195,8 @@ export default function Navbar() {
 
         {/* Mobile Actions */}
         <div className="flex items-center gap-1 md:hidden">
+
+          {/* Theme Toggle */}
           <button
             type="button"
             onClick={toggleTheme}
@@ -137,6 +210,7 @@ export default function Navbar() {
             )}
           </button>
 
+          {/* Mobile Menu Toggle */}
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
@@ -144,7 +218,11 @@ export default function Navbar() {
             aria-expanded={isOpen}
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
           >
-            {isOpen ? <X size={23} /> : <Menu size={23} />}
+            {isOpen ? (
+              <X size={23} />
+            ) : (
+              <Menu size={23} />
+            )}
           </button>
         </div>
       </nav>
@@ -153,6 +231,8 @@ export default function Navbar() {
       {isOpen && (
         <div className="border-t border-gray-200 bg-white px-4 pb-5 pt-3 dark:border-gray-800 dark:bg-gray-950 md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-1">
+
+            {/* Navigation Links */}
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -166,14 +246,15 @@ export default function Navbar() {
 
             <div className="my-2 border-t border-gray-200 dark:border-gray-800" />
 
+            {/* Authentication */}
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/dashboard"
+                  href="/my_listings"
                   onClick={closeMenu}
                   className="rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                 >
-                  Dashboard
+                  My Listings
                 </Link>
 
                 <button
