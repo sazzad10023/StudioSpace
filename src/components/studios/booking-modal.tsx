@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { getTokenFromClient } from "@/lib/getTokenFromclient";
 
 type BookingModalProps = {
   studioId: string;
@@ -59,11 +60,14 @@ export default function BookingModal({
 
       createdAt: new Date().toISOString(),
     };
-
+    const token = await getTokenFromClient();
+    
     const res = await fetch("http://localhost:8000/add-booking", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+
       },
       body: JSON.stringify(data),
     });

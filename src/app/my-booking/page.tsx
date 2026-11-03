@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import MyBookingsList from "@/components/my-bookings/my-bookings-list";
+import { getTokenFromServer } from "@/lib/getTokenFromServer";
 
 const MyBookingPage = async () => {
   const session = await auth.api.getSession({
@@ -15,10 +16,15 @@ const MyBookingPage = async () => {
   if (!user) {
     redirect("/login");
   }
+  const token = await getTokenFromServer();
 
   const res = await fetch(
     `http://localhost:8000/get-bookings/${encodeURIComponent(user.email)}`,
     {
+         headers: {
+
+            authorization: `Bearer ${token}`,
+        },
       cache: "no-store",
     }
   );

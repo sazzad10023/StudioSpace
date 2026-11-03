@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { getTokenFromClient } from "@/lib/getTokenFromclient";
 
 type Booking = {
   _id: string;
@@ -59,8 +60,9 @@ export default function MyBookingsList({ initialBookings }: Props) {
     const confirmed = window.confirm(
       "Are you sure you want to cancel this booking?"
     );
-
+ const token = await getTokenFromClient();
     if (!confirmed) return;
+
 
     try {
       setLoadingId(id);
@@ -69,8 +71,11 @@ export default function MyBookingsList({ initialBookings }: Props) {
         `http://localhost:8000/cancel-booking/${id}`,
         {
           method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                authorization: `Bearer ${token}`,
         }
-      );
+     } );
 
       const result = await res.json();
 

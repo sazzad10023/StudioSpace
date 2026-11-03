@@ -14,6 +14,7 @@ import { authClient } from "@/lib/auth-client";
 import Editstudio from "@/components/home/editstudio";
 import Deletestudio from "@/components/home/deletestudio";
 import Image from "next/image";
+import { getTokenFromClient } from "@/lib/getTokenFromclient";
 
 type Studio = {
   _id: string;
@@ -61,6 +62,7 @@ export default function MyListingsPage() {
     let cancelled = false;
 
     const getStudios = async () => {
+        const token = await getTokenFromClient();
       try {
         const res = await fetch(
           `${API_URL}/my-studios/${encodeURIComponent(email)}`,
@@ -68,6 +70,7 @@ export default function MyListingsPage() {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
+               authorization: `Bearer ${token}`,
             },
             cache: "no-store",
           }

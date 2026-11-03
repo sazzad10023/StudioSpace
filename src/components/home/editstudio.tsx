@@ -25,6 +25,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Link2, MapPin, User } from "lucide-react";
 
+import { getTokenFromClient } from "@/lib/getTokenFromclient";
+
 const API_URL = "http://localhost:8000";
 
 const CATEGORIES = [
@@ -202,7 +204,7 @@ export default function Editstudio({
       hostEmail: data.hostEmail,
       ownerEmail: data.ownerEmail,
     };
-
+     const token = await getTokenFromClient();
     try {
       const response = await fetch(
         `${API_URL}/update-studio/${encodeURIComponent(data._id)}`,
@@ -210,6 +212,7 @@ export default function Editstudio({
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(studioData),
         }

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createLogger } from "@/lib/logger";
+import { getTokenFromClient } from "@/lib/getTokenFromclient";
 
 const logger = createLogger("add-studio");
 
@@ -146,12 +147,14 @@ export default function AddStudioPage() {
       category: studioData.category,
       ownerEmail: studioData.ownerEmail,
     });
+    const token = await getTokenFromClient();
 
     try {
       const res = await fetch(`${API_URL}/add-studio`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(studioData),
       });

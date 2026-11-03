@@ -11,12 +11,20 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "../ui/button";
 
+import { getTokenFromClient } from "@/lib/getTokenFromclient";
+
 
 const Deletestudio = ({ id }: { id: string }) => {
     const handledetele = async ()=>{
+        const token = await getTokenFromClient();
+        
         const res = await fetch(`http://localhost:8000/delete-studio/${id}`, {
             method: "DELETE",
-        })
+            headers: {
+                "Content-Type": "application/json",
+                authorization: `Bearer ${token}`,
+            }
+        });
         const data = await res.json();
         console.log(data);
     }
