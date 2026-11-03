@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -20,6 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { createLogger } from "@/lib/logger";
 import { getTokenFromClient } from "@/lib/getTokenFromclient";
+import { toast } from "sonner";
 
 const logger = createLogger("add-studio");
 
@@ -117,6 +119,7 @@ export default function AddStudioPage() {
 
     if (!user) {
       setErrorMessage("Please login before adding a studio.");
+      toast.error("Please login before adding a studio.");
       return;
     }
 
@@ -147,6 +150,7 @@ export default function AddStudioPage() {
       category: studioData.category,
       ownerEmail: studioData.ownerEmail,
     });
+
     const token = await getTokenFromClient();
 
     try {
@@ -154,7 +158,7 @@ export default function AddStudioPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(studioData),
       });
@@ -172,16 +176,20 @@ export default function AddStudioPage() {
 
       setForm(EMPTY_FORM);
 
+      toast.success("Studio added successfully!");
+
       // Redirect to My Listings after successful submission.
       router.push("/my-listings");
       router.refresh();
-    // redirect("/my-listings");
+      // redirect("/my-listings");
     } catch (error) {
       logger.error("Failed to add studio", error);
 
       setErrorMessage(
         "Failed to add studio. Please check your server and try again."
       );
+
+      toast.error("Failed to add studio. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -192,6 +200,8 @@ export default function AddStudioPage() {
 
     setForm(EMPTY_FORM);
     setErrorMessage("");
+
+    toast.info("Form has been reset.");
   };
 
   // Wait until Better Auth checks the session.

@@ -37,7 +37,7 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Explore Studios", href: "/studios" },
   { name: "How It Works", href: "/#how-it-works" },
-  { name: "About Us", href: "/about" },
+  { name: "About Us", href: "/#about-us" },
 ];
 
 export default function Navbar() {
@@ -48,10 +48,11 @@ export default function Navbar() {
 
   const isAuthenticated = !!user;
 
-  const { theme, setTheme } = useTheme();
+  // Theme Toggle
+  const { resolvedTheme, setTheme } = useTheme();
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   const closeMenu = () => setIsOpen(false);
@@ -109,7 +110,7 @@ export default function Navbar() {
             aria-label="Toggle theme"
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
           >
-            {theme === "dark" ? (
+            {resolvedTheme === "dark" ? (
               <Sun size={19} />
             ) : (
               <Moon size={19} />
@@ -160,6 +161,20 @@ export default function Navbar() {
                     My Listings
                   </Link>
 
+                  <Link
+                    href="/my-booking"
+                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  >
+                    My Booking
+                  </Link>
+
+                  <Link
+                    href="/add-studio"
+                    className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  >
+                    Add studio
+                  </Link>
+
                   <Button
                     onClick={handleLogout}
                     variant="destructive"
@@ -203,7 +218,7 @@ export default function Navbar() {
             aria-label="Toggle theme"
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
           >
-            {theme === "dark" ? (
+            {resolvedTheme === "dark" ? (
               <Sun size={19} />
             ) : (
               <Moon size={19} />

@@ -36,6 +36,7 @@ type Props = {
 export default function MyBookingsList({ initialBookings }: Props) {
   const [bookings, setBookings] = useState(initialBookings);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+ 
 
   const getStatusStyle = (status: Booking["status"]) => {
     switch (status) {
@@ -82,7 +83,7 @@ export default function MyBookingsList({ initialBookings }: Props) {
       if (!res.ok) {
         throw new Error(result.message || "Cancellation failed");
       }
-
+   
       // Update booking status without removing the booking
       setBookings((previousBookings) =>
         previousBookings.map((booking) =>
@@ -112,7 +113,7 @@ export default function MyBookingsList({ initialBookings }: Props) {
         </h2>
 
         <p className="mt-2 max-w-sm text-sm leading-6 text-gray-500 dark:text-gray-400">
-          You haven't reserved any workspace yet. Explore our studios and
+          You have not reserved any workspace yet. Explore our studios and
           find the perfect space for your next project.
         </p>
       </div>

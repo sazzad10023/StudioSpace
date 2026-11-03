@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link2, MapPin, User } from "lucide-react";
 
 import { getTokenFromClient } from "@/lib/getTokenFromclient";
+import { toast } from "sonner";
 
 const API_URL = "http://localhost:8000";
 
@@ -179,6 +181,11 @@ export default function Editstudio({
     setSuccessMessage("");
   };
 
+  const handleReset = () => {
+    resetForm();
+    toast.info("Form has been reset.");
+  };
+
   const handleUpdate = async (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -227,6 +234,7 @@ export default function Editstudio({
       }
 
       setSuccessMessage("Studio updated successfully.");
+      toast.success("Studio updated successfully.");
 
       onUpdated?.();
 
@@ -238,6 +246,12 @@ export default function Editstudio({
       console.error("Failed to update studio:", error);
 
       setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while updating the studio."
+      );
+
+      toast.error(
         error instanceof Error
           ? error.message
           : "Something went wrong while updating the studio."
@@ -263,7 +277,7 @@ export default function Editstudio({
           <Button
             type="button"
             variant="outline"
-            className="h-8 rounded-md px-3 text-xs"
+            className="h-8 rounded-md px-3 text-xs transition-colors hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:border-violet-500 dark:hover:bg-violet-500/10 dark:hover:text-violet-400"
           />
         }
       >
@@ -531,8 +545,9 @@ export default function Editstudio({
               type="button"
               variant="outline"
               size="sm"
-              onClick={resetForm}
+              onClick={handleReset}
               disabled={isSubmitting}
+              className="transition-colors hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 dark:hover:border-violet-500 dark:hover:bg-violet-500/10 dark:hover:text-violet-400"
             >
               Reset
             </Button>
@@ -541,7 +556,7 @@ export default function Editstudio({
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="bg-violet-600 text-white hover:bg-violet-700"
+              className="bg-violet-600 text-white transition-colors hover:bg-violet-700 hover:shadow-sm"
             >
               {isSubmitting ? "Updating..." : "Update Studio"}
             </Button>
