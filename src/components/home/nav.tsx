@@ -265,7 +265,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 <Link
-                  href="/my_listings"
+                  href="/my-listings"
                   onClick={closeMenu}
                   className="rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
                 >

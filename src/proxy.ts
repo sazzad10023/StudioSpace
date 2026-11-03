@@ -14,10 +14,8 @@ export async function proxy(request: NextRequest) {
   if (!user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-
-
 }
 
 export const config = {
-  matcher: ["/add-studio","/my-booking", "/my-lisitings","/studios/:path"],
-}; 
+  matcher: ["/add-studio", "/my-booking", "/my-lisitings"],
+};

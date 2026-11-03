@@ -11,13 +11,16 @@ type Props = {
 export default async function StudioDetailsPage({ params }: Props) {
   const { id } = await params;
   const token = await getTokenFromServer();
+
+  const headers: HeadersInit = {};
+  if (token) {
+    headers.authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/get-studio/${id}`,
     {
-        headers: {
-
-            authorization:`Bearer ${token}`,
-        },
+      headers,
       cache: "no-store",
     }
   );
