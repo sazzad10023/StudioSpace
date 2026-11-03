@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { CalendarDays, Clock, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,14 @@ type BookingModalProps = {
   studioId: string;
   studioTitle: string;
   hourlyRate: number;
+  studioImage: string;
 };
 
 export default function BookingModal({
   studioId,
   studioTitle,
   hourlyRate,
+  studioImage,
 }: BookingModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [date, setDate] = useState("");
@@ -36,7 +39,7 @@ export default function BookingModal({
     e.preventDefault();
 
     if (!user) {
-      alert("Please login before booking.");
+      toast.error("Please login before booking.");
       return;
     }
 
@@ -47,6 +50,7 @@ export default function BookingModal({
 
       studioId,
       studioTitle,
+      studioImage,
 
       bookingDate: date,
       startTime,
@@ -63,10 +67,20 @@ export default function BookingModal({
       },
       body: JSON.stringify(data),
     });
-    const result= await res.json();
-    console.log("Booking response:", result);
 
-    // Booking API integration will go here.
+    const result = await res.json();
+
+    if (!res.ok) {
+      toast.error(result.message || "Booking failed. Please try again.");
+      return;
+    }
+
+    toast.success("Booking request submitted successfully!");
+
+    setDate("");
+    setStartTime("");
+    setHours("1");
+    closeModal();
   };
 
   const closeModal = () => {

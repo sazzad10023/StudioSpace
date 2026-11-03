@@ -36,7 +36,7 @@ type Studio = {
     imageUrl?: string;
     location?: string;
     maxCapacity?: number;
-    hourlyRate: number | string;
+    hourlyRate: number;
     securityDeposit?: number | string;
     overview?: string;
     amenities?: string[];
@@ -346,6 +346,7 @@ export default function StudioDetailsPage() {
                             studioId={studio._id ?? id}
                             studioTitle={studio.title}
                             hourlyRate={studio.hourlyRate}
+                            studioImage={studio.imageUrl ?? ""}
                         />
 
                         <div className="mt-6 rounded-xl bg-violet-50 p-4 dark:bg-violet-500/10">
