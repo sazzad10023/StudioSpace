@@ -29,7 +29,7 @@ import { Link2, MapPin, User } from "lucide-react";
 import { getTokenFromClient } from "@/lib/getTokenFromclient";
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:8000";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 const CATEGORIES = [
   "Photo Studios",

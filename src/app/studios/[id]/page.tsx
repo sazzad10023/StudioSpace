@@ -12,7 +12,7 @@ export default async function StudioDetailsPage({ params }: Props) {
   const { id } = await params;
   const token = await getTokenFromServer();
   const response = await fetch(
-    `http://localhost:8000/get-studio/${id}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/get-studio/${id}`,
     {
         headers: {
 

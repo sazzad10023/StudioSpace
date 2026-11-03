@@ -5,7 +5,7 @@ import { createLogger } from "@/lib/logger";
 import { extractStudioList, normalizeStudios, type Studio } from "@/lib/studios";
 
 const logger = createLogger("studios");
-const ENDPOINT = "http://localhost:8000/get-studios";
+const ENDPOINT = `${process.env.NEXT_PUBLIC_API_URL}/get-studios`;
 
 // Server component: fetches the studio data, then hands it to the
 // client component (`StudioListings`) that renders the filters + grid.

@@ -19,7 +19,7 @@ const MyBookingPage = async () => {
   const token = await getTokenFromServer();
 
   const res = await fetch(
-    `http://localhost:8000/get-bookings/${encodeURIComponent(user.email)}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/get-bookings/${encodeURIComponent(user.email)}`,
     {
          headers: {
 

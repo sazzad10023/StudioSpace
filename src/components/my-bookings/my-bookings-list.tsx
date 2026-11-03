@@ -70,7 +70,7 @@ export default function MyBookingsList({ initialBookings }: Props) {
       setLoadingId(id);
 
       const res = await fetch(
-        `http://localhost:8000/cancel-booking/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/cancel-booking/${id}`,
         {
           method: "PATCH",
             headers: {

@@ -21,7 +21,7 @@ const Deletestudio = ({ id }: { id: string }) => {
         try {
             const token = await getTokenFromClient();
 
-            const res = await fetch(`http://localhost:8000/delete-studio/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/delete-studio/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

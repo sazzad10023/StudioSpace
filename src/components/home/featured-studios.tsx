@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, ArrowUpRight } from "lucide-react";
 
-const API_URL = "http://localhost:8000";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 type Studio = {
   _id: string;
