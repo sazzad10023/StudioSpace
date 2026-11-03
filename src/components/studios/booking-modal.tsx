@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CalendarDays, Clock, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ export default function BookingModal({
   hourlyRate,
   studioImage,
 }: BookingModalProps) {
+  const router = useRouter();
+
   const [isOpen, setIsOpen] = useState(false);
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -59,14 +62,14 @@ export default function BookingModal({
 
       createdAt: new Date().toISOString(),
     };
+
     const token = await getTokenFromClient();
-    
+
     const res = await fetch("http://localhost:8000/add-booking", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         authorization: `Bearer ${token}`,
-
       },
       body: JSON.stringify(data),
     });
@@ -84,6 +87,9 @@ export default function BookingModal({
     setStartTime("");
     setHours("1");
     closeModal();
+
+    router.push("/my-booking");
+    router.refresh();
   };
 
   const closeModal = () => {

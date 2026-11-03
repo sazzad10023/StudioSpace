@@ -1,7 +1,6 @@
 import StudioDetailsClient from "@/components/studios/studio-details-client";
-import { auth } from "@/lib/auth";
 import { getTokenFromServer } from "@/lib/getTokenFromServer";
-import { headers } from "next/headers";
+
 
 type Props = {
   params: Promise<{
@@ -16,7 +15,8 @@ export default async function StudioDetailsPage({ params }: Props) {
     `http://localhost:8000/get-studio/${id}`,
     {
         headers: {
-            authorization: `Bearer ${token}`,
+
+            authorization:`Bearer ${token}`,
         },
       cache: "no-store",
     }

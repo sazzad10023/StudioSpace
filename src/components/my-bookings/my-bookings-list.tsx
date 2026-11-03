@@ -14,6 +14,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { getTokenFromClient } from "@/lib/getTokenFromclient";
+import { toast } from "sonner";
 
 type Booking = {
   _id: string;
@@ -91,10 +92,12 @@ export default function MyBookingsList({ initialBookings }: Props) {
             ? { ...booking, status: "Cancelled" }
             : booking
         )
+        
       );
+      toast.success("Booking cancelled successfully!");
     } catch (error) {
       console.error("Cancel Booking Error:", error);
-      alert("Failed to cancel booking.");
+      toast.error("Failed to cancel booking.");
     } finally {
       setLoadingId(null);
     }
