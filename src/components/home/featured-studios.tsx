@@ -1,7 +1,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Star, ArrowUpRight } from "lucide-react";
+import { MapPin, ArrowUpRight } from "lucide-react";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
@@ -11,7 +11,6 @@ type Studio = {
   category: string;
   imageUrl: string;
   hourlyRate: number;
-  rating?: number;
   location: string;
 };
 
@@ -48,7 +47,7 @@ export default async function FeaturedStudios() {
             </h2>
 
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Discover amazing creative spaces for your next project.
+              Discover our newest studio spaces for your next creative project.
             </p>
           </div>
 
@@ -85,15 +84,6 @@ export default async function FeaturedStudios() {
                   {/* Category Badge */}
                   <span className="absolute left-3 top-3 rounded-md bg-background/90 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
                     {studio.category}
-                  </span>
-
-                  {/* Rating Badge */}
-                  <span className="absolute right-3 top-3 flex items-center gap-1 rounded-md bg-background/90 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">
-                    <Star
-                      size={12}
-                      className="fill-yellow-400 text-yellow-400"
-                    />
-                    {studio.rating ?? "New"}
                   </span>
                 </div>
 
@@ -155,6 +145,7 @@ export default async function FeaturedStudios() {
             <ArrowUpRight size={16} />
           </Link>
         </div>
+
       </div>
     </section>
   );
